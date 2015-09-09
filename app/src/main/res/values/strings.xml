@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">北京浮生记</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+    <string name="location">地点</string>
+    <string name="market">黑市</string>
+    <string name="house">出租屋</string>
+
+    <string name="location_0">西直门</string>
+    <string name="location_1">积水潭</string>
+    <string name="location_2">东直门</string>
+    <string name="location_3">公主坟</string>
+    <string name="location_4">复兴门</string>
+    <string name="location_5">建国门</string>
+    <string name="location_6">长椿街</string>
+    <string name="location_7">崇文门</string>
+    <string name="location_8">北京站</string>
+
+</resources>
