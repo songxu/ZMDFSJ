@@ -2,8 +2,8 @@ package com.kdfly.zmdfsj;
 
 import android.content.Context;
 
+import com.kdfly.zmdfsj.model.Player;
 import com.kdfly.zmdfsj.model.Store;
-import com.kdfly.zmdfsj.utils.Logg;
 
 /**
  * Created by Sean on 2015-09-08.
@@ -12,6 +12,7 @@ public class GameEngine {
     protected static GameEngine instance = new GameEngine();
 
     protected Store store = new Store();
+    protected Player player = new Player();
     protected int[] price = null;
 
     protected GameEngine(){}
@@ -21,8 +22,13 @@ public class GameEngine {
     }
     public void init(Context context){
         price = store.getPrices();
+        player.init();
     }
     public int[] getGoodPrices(){
         return store.getPrices();
+    }
+
+    public Player getPlayer(){
+        return player;
     }
 }

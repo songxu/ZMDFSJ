@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <TextView
+        android:id="@+id/goodName"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:paddingLeft="4dp"
+        android:text="上海小宝贝(禁书)"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/goodPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:paddingLeft="50dp"
+        android:gravity="right|center_vertical"
+        android:text="¥ 10099.99"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/goodCount"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingRight="4dp"
+        android:gravity="right|center_vertical"
+        android:text="23"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+</LinearLayout>

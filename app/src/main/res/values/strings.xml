@@ -16,5 +16,8 @@
     <string name="location_6">长椿街</string>
     <string name="location_7">崇文门</string>
     <string name="location_8">北京站</string>
+    <string name="buy">购买</string>
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
 
 </resources>
