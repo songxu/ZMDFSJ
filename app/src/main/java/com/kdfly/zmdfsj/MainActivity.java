@@ -18,6 +18,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.kdfly.zmdfsj.model.Constants;
+import com.kdfly.zmdfsj.model.Player;
+import com.kdfly.zmdfsj.model.Room;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +41,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView tvLocation;
     @Bind(R.id.lv_own)
     ListView lvOwn;
+    @Bind(R.id.tv_cash)
+    TextView tvCash;
 
     private Random random;
     private int random_num;
@@ -60,6 +64,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initGoods();
         initOwnGoods();
         changeGoods();
+
+        updateStatus();
     }
 
     @Override
@@ -112,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         R.drawable.notification_template_icon_bg,
                         R.string.buy,
                         "test", R.string.ok, R.string.cancel, 1,
-                        new MainActivity.NumberInputCallback() {
+                        new NumberInputCallback() {
                             @Override
                             public void onNumberInputed(int number) {
                                 Map<String, Object> map = new HashMap<String, Object>();
@@ -146,13 +152,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void changeGoods() {
         list_store.clear();
-        for (int i = 0; i < 7; i++) {
+        int[] price = GameEngine.getInstance().getPrice();
+
+        for (int i = 0; i < price.length; i++) {
             Map<String, Object> map = new HashMap<String, Object>();
-            int pricel = GameEngine.getInstance().getGoodPrices()[i];
             map.put("name", Constants.goods[i]);
-            map.put("price", pricel);
-            System.out.println(pricel);
-            if (pricel != 0) {
+            map.put("price", price[i]);
+            System.out.println(price[i]);
+            if (price[i] != 0) {
                 list_store.add(map);
             }
         }
@@ -175,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void showNumberInputDialog(int iconId, int titleId, String message, int okId, int cancelId, int initNumber, final NumberInputCallback callback) {
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        input.setText(""+initNumber);
+        input.setText("" + initNumber);
         input.setSelectAllOnFocus(true);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -190,8 +197,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                                     try {
                                         int number = Integer.parseInt(input.getText().toString());
                                         callback.onNumberInputed(number);
-                                    }
-                                    catch(NumberFormatException ex) {
+                                    } catch (NumberFormatException ex) {
 //                                        EventBus.getDefault().post("error input, not processed here");
                                     }
                                 }
@@ -225,4 +231,49 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         EventBus.getDefault().unregister(this);
         super.onDestroy();
     }
+
+    //GameEngine use integer to send commands, like update interface and game over
+    //MainActivity need to process it if possible
+    //while some commands need to be processed after notification dialog(like change tab or restart)
+    //so need to be converted with special_event string, and insert into notification queue with EventBus
+    public void onEventMainThread(Integer event) {
+        switch(event) {
+            case Constants.UPDATE_MONEY:
+                updateStatus();
+                break;
+//            case Constants.UPDATE_DAY:
+//                updateDay();
+//                autoChangeTab();
+//                break;
+//            case Constants.UPDATE_DEAL:
+//                autoChangeTab();
+//                break;
+//            case Constants.UPDATE_MARKET:
+//                break;
+//            case Constants.UPDATE_ROOM:
+//                updateStatus();
+//                break;
+//            case Constants.UPDATE_MONEY:
+//            case Constants.UPDATE_FAME:
+//            case Constants.UPDATE_HEALTH:
+//                updateStatus();
+//                break;
+//            case Constants.UPDATE_GAME_OVER:
+//                //game over may be triggered by health event or time
+//                //that means maybe some event dialog is in the front
+//                //so need to use SPECIAL_EVENT_GAMEOVER to trigger some action after event dialog
+//                EventBus.getDefault().post(SPECIAL_EVENT_GAMEOVER);
+//            case Constants.UPDATE_SETTINGS:
+//                updateSettings();
+//                break;
+        }
+    }
+
+    protected void updateStatus() {
+        Player player = GameEngine.getInstance().getPlayer();
+        Room room = GameEngine.getInstance().getRoom();
+
+        tvCash.setText("现金：" + player.getMoney());
+    }
+
 }
