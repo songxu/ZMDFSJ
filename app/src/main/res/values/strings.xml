@@ -20,4 +20,8 @@
     <string name="ok">确定</string>
     <string name="cancel">取消</string>
 
+    <string name="no_enough_room">出租房里没有足够的空间。</string>
+    <string name="no_enough_money">剩余的余额不足。</string>
+    <string name="you_can_buy">您要购买</string>
+
 </resources>

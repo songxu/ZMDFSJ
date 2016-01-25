@@ -13,13 +13,17 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.SeekBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.gregacucnik.EditableSeekBar;
 import com.kdfly.zmdfsj.model.Constants;
 import com.kdfly.zmdfsj.model.Player;
 import com.kdfly.zmdfsj.model.Room;
+
+import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,6 +95,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void changeLocation() {
+        GameEngine.getInstance().oneDayPass();
+
         random = new Random();
         random_num = random.nextInt(9);
 //        System.out.println(location[random_num]);
@@ -99,8 +105,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initGoods() {
-        list_store = new ArrayList<Map<String, Object>>();
-        adapter_store = new SimpleAdapter(this, list_store, R.layout.listitem_store, new String[]{"name", "price"}, new int[]{R.id.goodName, R.id.goodPrice});
+        list_store = new ArrayList<>();
+        adapter_store = new SimpleAdapter(this, list_store, R.layout.listitem_store, new String[]{"name", "price", "gid"}, new int[]{R.id.goodName, R.id.goodPrice, R.id.goodid});
         lvStore.setAdapter(adapter_store);
 
 
@@ -110,6 +116,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
                 final String name = ((TextView) view.findViewById(R.id.goodName)).getText().toString();
                 final String pricel = ((TextView) view.findViewById(R.id.goodPrice)).getText().toString();
+                final String gid = ((TextView) view.findViewById(R.id.goodid)).getText().toString();
+
+                int getCanBuyAmount = (int)Math.floor(GameEngine.getInstance().getPlayer().getMoney()/Integer.parseInt(pricel));
+                int getCanStoreAmount = GameEngine.getInstance().getRoom().getSpace();
+                final int maxBuy =  getCanBuyAmount > getCanStoreAmount ? getCanStoreAmount:getCanBuyAmount;
 //                Toast.makeText(MainActivity.this, name, Toast.LENGTH_SHORT).show();
 
 //                list_store.remove(position);
@@ -117,16 +128,29 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 showNumberInputDialog(
                         R.drawable.notification_template_icon_bg,
                         R.string.buy,
-                        "test", R.string.ok, R.string.cancel, 1,
+                        "test", R.string.ok, R.string.cancel, maxBuy,
                         new NumberInputCallback() {
                             @Override
                             public void onNumberInputed(int number) {
-                                Map<String, Object> map = new HashMap<String, Object>();
-                                map.put("name", name);
-                                map.put("price", pricel);
-                                map.put("count", number);
-                                list_ownstore.add(map);
-//                                GameEngine.getInstance().dealWithMarket(disp.goodId, number);
+                                if (GameEngine.getInstance().getRoom().getSpace() > 0) {
+                                    if (GameEngine.getInstance().getPlayer().getMoney() > Integer.parseInt(pricel)) {
+                                        System.out.println("剩余的空间数：" + GameEngine.getInstance().getRoom().getSpace());
+
+//                                        Map<String, Object> map = new HashMap<String, Object>();
+//                                        map.put("name", name);
+//                                        map.put("price", pricel);
+//                                        map.put("count", number);
+//                                        map.put("gid", gid);
+//                                        list_ownstore.add(map);
+
+                                        GameEngine.getInstance().buyOrSell(Integer.parseInt(gid), number);
+                                    }else {
+                                        Toast.makeText(getApplicationContext(), R.string.no_enough_money, Toast.LENGTH_LONG).show();
+                                    }
+                                } else {
+                                    Toast.makeText(getApplicationContext(), R.string.no_enough_room, Toast.LENGTH_LONG).show();
+                                }
+
 //                                ((MainActivity) getActivity()).playSound("buy.wav", 0);
                             }
                         });
@@ -135,8 +159,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     private void initOwnGoods() {
-        list_ownstore = new ArrayList<Map<String, Object>>();
-        adapter_ownstore = new SimpleAdapter(this, list_ownstore, R.layout.listitem_ownstore, new String[]{"name", "price", "count"}, new int[]{R.id.goodName, R.id.goodPrice, R.id.goodCount});
+        list_ownstore = new ArrayList<>();
+        adapter_ownstore = new SimpleAdapter(this, list_ownstore, R.layout.listitem_ownstore, new String[]{"name", "price", "count", "gid"}, new int[]{R.id.goodName, R.id.goodPrice, R.id.goodCount, R.id.goodid});
         lvOwn.setAdapter(adapter_ownstore);
 
 
@@ -158,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("name", Constants.goods[i]);
             map.put("price", price[i]);
+            map.put("gid", i);
             System.out.println(price[i]);
             if (price[i] != 0) {
                 list_store.add(map);
@@ -180,22 +205,32 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     protected void showNumberInputDialog(int iconId, int titleId, String message, int okId, int cancelId, int initNumber, final NumberInputCallback callback) {
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_NUMBER);
-        input.setText("" + initNumber);
-        input.setSelectAllOnFocus(true);
+//        final EditText input = new EditText(this);
+
+        View view = View.inflate(getApplicationContext(), R.layout.dialog_buy_or_sell, null);
+
+        final TextView tvYouCanBuy = (TextView)view.findViewById(R.id.tv_you_can_buy);
+        final EditableSeekBar sbBuyInput = (EditableSeekBar)view.findViewById(R.id.sb_buy_input);
+
+//        etBuyInput.setInputType(InputType.TYPE_CLASS_NUMBER);
+//        etBuyInput.setText("" + initNumber);
+//        etBuyInput.setSelectAllOnFocus(true);
+//        sbBuyInput.setProgress(initNumber);
+//        sbBuyInput.setMax(initNumber);
+        sbBuyInput.setValue(initNumber);
+        sbBuyInput.setMaxValue(initNumber);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setIcon(iconId)
                 .setTitle(titleId)
                 .setMessage(message)
-                .setView(input)
+                .setView(view)
                 .setPositiveButton(okId,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {
                                 if (null != callback) {
                                     try {
-                                        int number = Integer.parseInt(input.getText().toString());
+                                        int number = sbBuyInput.getValue();
                                         callback.onNumberInputed(number);
                                     } catch (NumberFormatException ex) {
 //                                        EventBus.getDefault().post("error input, not processed here");
@@ -210,14 +245,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         });
         final AlertDialog alert = builder.create();
-        input.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                if (hasFocus) {
-                    alert.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-                }
-            }
-        });
+//        etBuyInput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//            @Override
+//            public void onFocusChange(View v, boolean hasFocus) {
+//                if (hasFocus) {
+//                    alert.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
+//                }
+//            }
+//        });
 
         alert.show();
     }
@@ -237,7 +272,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     //while some commands need to be processed after notification dialog(like change tab or restart)
     //so need to be converted with special_event string, and insert into notification queue with EventBus
     public void onEventMainThread(Integer event) {
-        switch(event) {
+        switch (event) {
             case Constants.UPDATE_MONEY:
                 updateStatus();
                 break;
@@ -250,9 +285,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 //                break;
 //            case Constants.UPDATE_MARKET:
 //                break;
-//            case Constants.UPDATE_ROOM:
-//                updateStatus();
-//                break;
+            case Constants.UPDATE_ROOM:
+                updateStatus();
+                break;
 //            case Constants.UPDATE_MONEY:
 //            case Constants.UPDATE_FAME:
 //            case Constants.UPDATE_HEALTH:
@@ -271,7 +306,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     protected void updateStatus() {
         Player player = GameEngine.getInstance().getPlayer();
+
+        list_ownstore.clear();
         Room room = GameEngine.getInstance().getRoom();
+        int[] count = room.getGoodsCount();
+        int[] cost = room.getGoodsCost();
+        for (int i = 0; i < count.length; i++) {
+            if (0 != count[i]) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("name", Constants.goods[i]);
+                map.put("price", cost[i] / count[i]);
+                map.put("count", count[i]);
+                map.put("gid", i);
+                list_ownstore.add(map);
+            }
+        }
+
+
+
 
         tvCash.setText("现金：" + player.getMoney());
     }

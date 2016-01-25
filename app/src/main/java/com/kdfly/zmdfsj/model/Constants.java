@@ -12,6 +12,8 @@ public class Constants {
     public static final String[] goodID = {"g1","g1","g3","g4","g5","g6","g7","g8",};
     public static final int goodsPriceBase[] = new int[]{100,15000,5,1000,5000,250,750,65};
     public static final int goodsPriceRand[] = new int[]{350,15000,50,2500,9000,600,750,180};
+    public static int randomGoodsamount = 3;
+    public static int GOOD_TYPE_COUNT = 7;
 
     protected static Random random = new Random();
     public static int getRandom(int max) {

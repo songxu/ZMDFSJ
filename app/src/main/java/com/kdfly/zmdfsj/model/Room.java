@@ -32,7 +32,17 @@ public class Room {
     }
 
     public void init(){
+        count = new int[Constants.GOOD_TYPE_COUNT];
+        cost = new int[Constants.GOOD_TYPE_COUNT];
         space = Constants.INIT_SPACE;
+    }
+
+    public int[] getGoodsCount() {
+        return count;
+    }
+
+    public int[] getGoodsCost() {
+        return cost;
     }
 
 

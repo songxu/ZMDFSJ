@@ -26,7 +26,7 @@ public class GameEngine {
         return instance;
     }
     public void init(Context context){
-        price = store.getPrices(3);
+        price = store.getPrices(Constants.randomGoodsamount);
         player.init();
         room.init();
     }
@@ -41,6 +41,10 @@ public class GameEngine {
         return price;
     }
 
+    public void oneDayPass(){
+        price = store.getPrices(Constants.randomGoodsamount);
+    }
+
     public void buyOrSell(int goodId,int count){
         if (count<=0)
             return;
@@ -52,8 +56,9 @@ public class GameEngine {
             return;
 
         player.setMoney(money);
-//        room.storeGoods(goodId, count, price[goodId]);
+        room.addGood(goodId, count, price[goodId]);
         EventBus.getDefault().post(Constants.UPDATE_MONEY);
+        EventBus.getDefault().post(Constants.UPDATE_ROOM);
 
     }
 }
