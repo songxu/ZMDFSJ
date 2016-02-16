@@ -1,5 +1,7 @@
 package com.kdfly.zmdfsj.model;
 
+import android.util.Log;
+
 /**
  * Created by Sean on 2015-09-08.
  */
@@ -14,6 +16,10 @@ public class Store {
         for (int i = 0; i<gid; i++){
             prices[Constants.getRandom(prices.length)] = 0;
         }
+
+//        for (int i = 0; i< prices.length; i++)
+//            Log.i("kdfly","Store.getPrices函数"+prices[i]);
+
         return prices;
     }
 }

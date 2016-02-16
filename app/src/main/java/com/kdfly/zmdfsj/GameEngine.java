@@ -19,6 +19,7 @@ public class GameEngine {
     protected Player player = new Player();
     protected Room room = new Room();
     protected int[] price = null;
+    protected int day = 0;
 
     protected GameEngine(){}
 
@@ -26,7 +27,7 @@ public class GameEngine {
         return instance;
     }
     public void init(Context context){
-        price = store.getPrices(Constants.randomGoodsamount);
+        price = store.getPrices(Constants.randomGoodsAmount);
         player.init();
         room.init();
     }
@@ -40,12 +41,29 @@ public class GameEngine {
     public int[] getPrice() {
         return price;
     }
+    public int getDay(){return day;}
 
     public void oneDayPass(){
-        price = store.getPrices(Constants.randomGoodsamount);
+        price = store.getPrices(Constants.randomGoodsAmount);
+        day = day + 1;
     }
 
-    public void buyOrSell(int goodId,int count){
+    public boolean checkCanSell(int goodID){
+        if (price[goodID] >0 ){
+            return true;
+        }else {
+            return false;
+        }
+    }
+
+    public void sellGood(int goodId, int count){
+        room.delGood(goodId, count);
+        player.setMoney(player.getMoney() + price[goodId] * count);
+        EventBus.getDefault().post(Constants.UPDATE_MONEY);
+        EventBus.getDefault().post(Constants.UPDATE_ROOM);
+    }
+
+    public void buyGood(int goodId,int count){
         if (count<=0)
             return;
 
@@ -59,6 +77,5 @@ public class GameEngine {
         room.addGood(goodId, count, price[goodId]);
         EventBus.getDefault().post(Constants.UPDATE_MONEY);
         EventBus.getDefault().post(Constants.UPDATE_ROOM);
-
     }
 }

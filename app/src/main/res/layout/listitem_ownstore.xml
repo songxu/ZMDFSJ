@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal" android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="40dp" android:background="#3498db">
+
+    <TextView
+        android:id="@+id/goodid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="invisible"/>
     <TextView
         android:id="@+id/goodName"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:gravity="center_vertical"
-        android:paddingLeft="4dp"
         android:text="上海小宝贝(禁书)"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -15,8 +20,8 @@
         android:id="@+id/goodPrice"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:paddingLeft="50dp"
         android:gravity="right|center_vertical"
+        android:layout_marginLeft="30dp"
         android:text="¥ 10099.99"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
@@ -24,14 +29,8 @@
         android:id="@+id/goodCount"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:paddingRight="4dp"
         android:gravity="right|center_vertical"
         android:text="23"
         android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <TextView
-        android:id="@+id/goodid"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone"/>
 </LinearLayout>

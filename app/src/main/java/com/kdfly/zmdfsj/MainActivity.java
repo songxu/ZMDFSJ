@@ -4,16 +4,13 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.text.InputType;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.WindowManager;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.SeekBar;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,8 +19,6 @@ import com.gregacucnik.EditableSeekBar;
 import com.kdfly.zmdfsj.model.Constants;
 import com.kdfly.zmdfsj.model.Player;
 import com.kdfly.zmdfsj.model.Room;
-
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -47,6 +42,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     ListView lvOwn;
     @Bind(R.id.tv_cash)
     TextView tvCash;
+    @Bind(R.id.tv_day)
+    TextView tvDay;
+    @Bind(R.id.tv_room)
+    TextView tvRoom;
 
     private Random random;
     private int random_num;
@@ -68,6 +67,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         initGoods();
         initOwnGoods();
         changeGoods();
+        changeLocation();
 
         updateStatus();
     }
@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         random_num = random.nextInt(9);
 //        System.out.println(location[random_num]);
         tvLocation.setText(Constants.location[random_num]);
+        tvDay.setText("第" + GameEngine.getInstance().getDay() + "天");
         changeGoods();
     }
 
@@ -118,9 +119,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 final String pricel = ((TextView) view.findViewById(R.id.goodPrice)).getText().toString();
                 final String gid = ((TextView) view.findViewById(R.id.goodid)).getText().toString();
 
-                int getCanBuyAmount = (int)Math.floor(GameEngine.getInstance().getPlayer().getMoney()/Integer.parseInt(pricel));
+                int getCanBuyAmount = (int) Math.floor(GameEngine.getInstance().getPlayer().getMoney() / Integer.parseInt(pricel));
                 int getCanStoreAmount = GameEngine.getInstance().getRoom().getSpace();
-                final int maxBuy =  getCanBuyAmount > getCanStoreAmount ? getCanStoreAmount:getCanBuyAmount;
+                final int maxBuy = getCanBuyAmount > getCanStoreAmount ? getCanStoreAmount : getCanBuyAmount;
 //                Toast.makeText(MainActivity.this, name, Toast.LENGTH_SHORT).show();
 
 //                list_store.remove(position);
@@ -128,23 +129,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 showNumberInputDialog(
                         R.drawable.notification_template_icon_bg,
                         R.string.buy,
-                        "test", R.string.ok, R.string.cancel, maxBuy,
+                        "购买", R.string.ok, R.string.cancel, maxBuy,
                         new NumberInputCallback() {
                             @Override
                             public void onNumberInputed(int number) {
                                 if (GameEngine.getInstance().getRoom().getSpace() > 0) {
                                     if (GameEngine.getInstance().getPlayer().getMoney() > Integer.parseInt(pricel)) {
-                                        System.out.println("剩余的空间数：" + GameEngine.getInstance().getRoom().getSpace());
+//                                        System.out.println("剩余的空间数：" + GameEngine.getInstance().getRoom().getSpace());
 
-//                                        Map<String, Object> map = new HashMap<String, Object>();
-//                                        map.put("name", name);
-//                                        map.put("price", pricel);
-//                                        map.put("count", number);
-//                                        map.put("gid", gid);
-//                                        list_ownstore.add(map);
-
-                                        GameEngine.getInstance().buyOrSell(Integer.parseInt(gid), number);
-                                    }else {
+                                        GameEngine.getInstance().buyGood(Integer.parseInt(gid), number);
+                                    } else {
                                         Toast.makeText(getApplicationContext(), R.string.no_enough_money, Toast.LENGTH_LONG).show();
                                     }
                                 } else {
@@ -168,8 +162,31 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String name = ((TextView) view.findViewById(R.id.goodName)).getText().toString();
-                Toast.makeText(MainActivity.this, name, Toast.LENGTH_SHORT).show();
+                final String gid = ((TextView) view.findViewById(R.id.goodid)).getText().toString();
+
+                final Room room = GameEngine.getInstance().getRoom();
+                final int[] count = room.getGoodsCount();
+                final int maxSell = count[Integer.parseInt(gid)];
+                final int[] cost = room.getGoodsCost();
+
+                final Player player = GameEngine.getInstance().getPlayer();
+
+                if (GameEngine.getInstance().checkCanSell(Integer.parseInt(gid))) {
+                    showNumberInputDialog(
+                            R.drawable.notification_template_icon_bg,
+                            R.string.buy,
+                            "售出", R.string.ok, R.string.cancel, maxSell,
+                            new NumberInputCallback() {
+                                @Override
+                                public void onNumberInputed(int number) {
+                                    GameEngine.getInstance().sellGood(Integer.parseInt(gid), number);
+                                }
+                            });
+                } else {
+                    Toast.makeText(getApplicationContext(), R.string.cannot_buy, Toast.LENGTH_LONG).show();
+                }
+
+
             }
         });
     }
@@ -209,14 +226,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         View view = View.inflate(getApplicationContext(), R.layout.dialog_buy_or_sell, null);
 
-        final TextView tvYouCanBuy = (TextView)view.findViewById(R.id.tv_you_can_buy);
-        final EditableSeekBar sbBuyInput = (EditableSeekBar)view.findViewById(R.id.sb_buy_input);
+        final TextView tvYouCanBuy = (TextView) view.findViewById(R.id.tv_you_can_buy);
+        final EditableSeekBar sbBuyInput = (EditableSeekBar) view.findViewById(R.id.sb_buy_input);
 
-//        etBuyInput.setInputType(InputType.TYPE_CLASS_NUMBER);
-//        etBuyInput.setText("" + initNumber);
-//        etBuyInput.setSelectAllOnFocus(true);
-//        sbBuyInput.setProgress(initNumber);
-//        sbBuyInput.setMax(initNumber);
         sbBuyInput.setValue(initNumber);
         sbBuyInput.setMaxValue(initNumber);
 
@@ -245,14 +257,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                             }
                         });
         final AlertDialog alert = builder.create();
-//        etBuyInput.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//            @Override
-//            public void onFocusChange(View v, boolean hasFocus) {
-//                if (hasFocus) {
-//                    alert.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-//                }
-//            }
-//        });
 
         alert.show();
     }
@@ -321,11 +325,11 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 list_ownstore.add(map);
             }
         }
-
-
+        adapter_ownstore.notifyDataSetChanged();
 
 
         tvCash.setText("现金：" + player.getMoney());
+        tvRoom.setText("剩余格子：" + GameEngine.getInstance().getRoom().getSpace() + "/100");
     }
 
 }
